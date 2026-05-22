@@ -6,7 +6,7 @@
     "framework": "python-numpy-logistic",
     "license": "MIT",
     "repo_url": "https://github.com/tomkaba/poker44-miner-ml17_pre1",
-    "repo_commit": "408a8d7bb950da6ecf7b41f45fb2c17456d33e49",
+    "repo_commit": "69e86862be310f1396a90e3df49efdef2e9fdf2f",
     "inference_mode": "local",
     "training_data_statement": "Trained on benchmark groundtruth.",
     "data_attestation": "This stage uses benchmark groundtruth only and does not use validator-private human data.",
@@ -25,6 +25,6 @@
         "poker44/utils/model_manifest.py",
         "poker44/validator/synapse.py"
     ],
-    "implementation_sha256": "b014c4c501c843c77f5753b3b15f69a36e3c5afe97b315f7111576396fee8717",
+    "implementation_sha256": "2d98efb89f4b5ba3edc7448edfe1ee9dccddd397d21e071cfb487c54ba42abce",
     "notes": "Gen17 pre-1 runtime classifier for miner inference."
 }
