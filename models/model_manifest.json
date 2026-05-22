@@ -6,9 +6,9 @@
     "framework": "python-numpy-logistic",
     "license": "MIT",
     "repo_url": "https://github.com/tomkaba/poker44-miner-ml17_pre1",
-    "repo_commit": "42af6328fb301e43e6fbe91efa7e417534817546",
+    "repo_commit": "408a8d7bb950da6ecf7b41f45fb2c17456d33e49",
     "inference_mode": "local",
-    "training_data_statement": "Trained with benchmark groundtruth from miner_logs.db chunk_truth joined to chunk_dedup.",
+    "training_data_statement": "Trained on benchmark groundtruth.",
     "data_attestation": "This stage uses benchmark groundtruth only and does not use validator-private human data.",
     "private_data_attestation": "This stage does not use validator-private human data.",
     "implementation_files": [
@@ -26,5 +26,5 @@
         "poker44/validator/synapse.py"
     ],
     "implementation_sha256": "b014c4c501c843c77f5753b3b15f69a36e3c5afe97b315f7111576396fee8717",
-    "notes": "Gen17 pre-1 stage1 hero-centric chunk classifier for preprod miner evaluation."
+    "notes": "Gen17 pre-1 runtime classifier for miner inference."
 }
