@@ -100,7 +100,9 @@ class Miner(BaseMinerNeuron):
         self.model_manifest = build_local_model_manifest(
             repo_root=repo_root,
             implementation_files=[
-                repo_root / "weights" / "gen16_synth3_ft7_d_hardened.ts",
+                repo_root / "models" / "model.npz",
+                repo_root / "models" / "score_chunk.py",
+                repo_root / "models" / "feature_extractor_frozen.py",
                 Path(__file__).resolve(),
                 repo_root / "poker44" / "__init__.py",
                 repo_root / "poker44" / "base" / "miner.py",
@@ -112,18 +114,18 @@ class Miner(BaseMinerNeuron):
                 repo_root / "poker44" / "validator" / "synapse.py",
             ],
             defaults={
-                "model_name": "poker44_ml16_3",
-                "model_version": "16.3",
-                "framework": "pytorch-torchscript",
+                "model_name": "poker44_ml17_pre1",
+                "model_version": "17.pre1",
+                "framework": "python-numpy-logistic",
                 "license": "MIT",
-                "repo_url": "https://github.com/tomkaba/poker44-miner-ml16_3",
+                "repo_url": "https://github.com/tomkaba/poker44-miner-ml17_pre1",
                 "repo_commit": git_commit,
-                "notes": "Gen16-3 neural network scorer (artifact gen16_synth3_ft7_d_hardened)",
+                "notes": "Gen17 pre-1 stage1 hero-centric chunk classifier for preprod miner evaluation.",
                 "open_source": True,
                 "inference_mode": "local",
-                "training_data_statement": "Trained with benchmark groundtruth",
-                "private_data_attestation": "This miner does not train on validator-private human data.",
-                "data_attestation": "This miner does not train on validator-private human data.",
+                "training_data_statement": "Trained with benchmark groundtruth from miner_logs.db chunk_truth joined to chunk_dedup.",
+                "private_data_attestation": "This stage does not use validator-private human data.",
+                "data_attestation": "This stage uses benchmark groundtruth only and does not use validator-private human data.",
             },
         )
 
@@ -199,7 +201,7 @@ class Miner(BaseMinerNeuron):
             chunks=chunks,
         )
 
-        bt.logging.info(f"Scored {len(chunks)} chunks with scorer ml16_3.")
+        bt.logging.info(f"Scored {len(chunks)} chunks with scorer ml17_pre1.")
         return synapse
 
     @staticmethod
@@ -310,6 +312,6 @@ if __name__ == "__main__":
         bt.logging.info("Miner running...")
         while True:
             bt.logging.info(
-                f"Miner UID: {miner.uid} | Incentive: {float(miner.metagraph.I[miner.uid])} | Scorer: ml16_3"
+                f"Miner UID: {miner.uid} | Incentive: {float(miner.metagraph.I[miner.uid])} | Scorer: ml17_pre1"
             )
             time.sleep(60)

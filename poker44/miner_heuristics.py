@@ -2,33 +2,17 @@
 
 from __future__ import annotations
 
-import os
+import importlib.util
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-import numpy as np
-import torch
+from typing import Any, Dict, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-RUNTIME_MODEL_PATH = REPO_ROOT / "weights" / "gen16_synth3_ft7_d_hardened.ts"
+RUNTIME_MODEL_PATH = REPO_ROOT / "models" / "model.npz"
+RUNTIME_SCORER_PATH = REPO_ROOT / "models" / "score_chunk.py"
+RUNTIME_FEATURE_EXTRACTOR_PATH = REPO_ROOT / "models" / "feature_extractor_frozen.py"
 
-ACTION_MAP = {
-    "fold": 1,
-    "call": 2,
-    "raise": 3,
-    "check": 4,
-    "bet": 5,
-    "all_in": 6,
-}
-
-STREET_MAP = {
-    "preflop": 1,
-    "flop": 2,
-    "turn": 3,
-    "river": 4,
-}
-
-_RUNTIME_MODEL: Optional[torch.jit.ScriptModule] = None
+_RUNTIME_MODEL: Optional[Dict[str, Any]] = None
+_RUNTIME_SCORER: Optional[Any] = None
 _RUNTIME_AVAILABLE = False
 _RUNTIME_LOAD_ERROR: Optional[str] = None
 
@@ -37,74 +21,20 @@ def _clamp01(value: float) -> float:
     return max(0.0, min(1.0, value))
 
 
-def _safe_float(value: object) -> float:
-    try:
-        return float(value)
-    except Exception:
-        return 0.0
+def _load_runtime_scorer() -> Any:
+    global _RUNTIME_SCORER
 
+    if _RUNTIME_SCORER is not None:
+        return _RUNTIME_SCORER
 
-def _runtime_shape() -> Tuple[int, int]:
-    max_hands = int(os.getenv("POKER44_MODEL_MAX_HANDS", "128"))
-    max_actions = int(os.getenv("POKER44_MODEL_MAX_ACTIONS", "32"))
-    return max(1, max_hands), max(1, max_actions)
+    spec = importlib.util.spec_from_file_location("poker44_gen17_pre1_scorer", RUNTIME_SCORER_PATH)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Cannot load runtime scorer from {RUNTIME_SCORER_PATH}")
 
-
-def _encode_chunk(chunk: List[dict], max_hands: int, max_actions: int) -> Dict[str, np.ndarray]:
-    shape = (max_hands, max_actions)
-
-    arr_action_type = np.zeros(shape, dtype=np.int64)
-    arr_street = np.zeros(shape, dtype=np.int64)
-    arr_actor_seat = np.zeros(shape, dtype=np.int64)
-
-    arr_amount = np.zeros(shape, dtype=np.float32)
-    arr_raise_to = np.zeros(shape, dtype=np.float32)
-    arr_call_to = np.zeros(shape, dtype=np.float32)
-    arr_norm_bb = np.zeros(shape, dtype=np.float32)
-    arr_pot_before = np.zeros(shape, dtype=np.float32)
-    arr_pot_after = np.zeros(shape, dtype=np.float32)
-
-    arr_raise_miss = np.zeros(shape, dtype=np.float32)
-    arr_call_miss = np.zeros(shape, dtype=np.float32)
-    arr_valid = np.zeros(shape, dtype=np.float32)
-
-    for h_i, hand in enumerate(chunk[:max_hands]):
-        actions = hand.get("actions") or []
-        for a_i, action in enumerate(actions[:max_actions]):
-            t = (action.get("action_type") or "").lower()
-            s = (action.get("street") or "").lower()
-            seat = action.get("actor_seat")
-
-            arr_action_type[h_i, a_i] = ACTION_MAP.get(t, 0)
-            arr_street[h_i, a_i] = STREET_MAP.get(s, 0)
-            arr_actor_seat[h_i, a_i] = int(seat) + 1 if isinstance(seat, int) and seat >= 0 else 0
-
-            arr_amount[h_i, a_i] = _safe_float(action.get("amount"))
-            rto = action.get("raise_to")
-            cto = action.get("call_to")
-            arr_raise_miss[h_i, a_i] = 1.0 if rto is None else 0.0
-            arr_call_miss[h_i, a_i] = 1.0 if cto is None else 0.0
-            arr_raise_to[h_i, a_i] = _safe_float(rto)
-            arr_call_to[h_i, a_i] = _safe_float(cto)
-            arr_norm_bb[h_i, a_i] = _safe_float(action.get("normalized_amount_bb"))
-            arr_pot_before[h_i, a_i] = _safe_float(action.get("pot_before"))
-            arr_pot_after[h_i, a_i] = _safe_float(action.get("pot_after"))
-            arr_valid[h_i, a_i] = 1.0
-
-    return {
-        "action_type": arr_action_type,
-        "street": arr_street,
-        "actor_seat": arr_actor_seat,
-        "amount": arr_amount,
-        "raise_to": arr_raise_to,
-        "call_to": arr_call_to,
-        "norm_amount_bb": arr_norm_bb,
-        "pot_before": arr_pot_before,
-        "pot_after": arr_pot_after,
-        "raise_to_missing": arr_raise_miss,
-        "call_to_missing": arr_call_miss,
-        "valid_mask": arr_valid,
-    }
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    _RUNTIME_SCORER = module
+    return module
 
 
 def _load_runtime_model() -> bool:
@@ -116,8 +46,8 @@ def _load_runtime_model() -> bool:
         return False
 
     try:
-        _RUNTIME_MODEL = torch.jit.load(str(RUNTIME_MODEL_PATH), map_location="cpu")
-        _RUNTIME_MODEL.eval()
+        scorer = _load_runtime_scorer()
+        _RUNTIME_MODEL = scorer.load_model(RUNTIME_MODEL_PATH)
         _RUNTIME_AVAILABLE = True
         _RUNTIME_LOAD_ERROR = None
         return True
@@ -136,33 +66,9 @@ def score_chunk_runtime_with_route(chunk: List[dict]) -> Tuple[float, str]:
         return 0.5, "runtime_unavailable"
 
     try:
-        max_hands, max_actions = _runtime_shape()
-        enc = _encode_chunk(chunk, max_hands=max_hands, max_actions=max_actions)
-
-        x = {}
-        for k, v in enc.items():
-            t = torch.from_numpy(v).unsqueeze(0)
-            if k in {"action_type", "street", "actor_seat"}:
-                x[k] = t.long()
-            else:
-                x[k] = t.float()
-
-        with torch.no_grad():
-            y = _RUNTIME_MODEL(
-                x["action_type"],
-                x["street"],
-                x["actor_seat"],
-                x["amount"],
-                x["raise_to"],
-                x["call_to"],
-                x["norm_amount_bb"],
-                x["pot_before"],
-                x["pot_after"],
-                x["raise_to_missing"],
-                x["call_to_missing"],
-                x["valid_mask"],
-            )
-        return round(_clamp01(float(y.item())), 6), "runtime"
+        scorer = _load_runtime_scorer()
+        probability = float(scorer.score_chunk(chunk, model=_RUNTIME_MODEL))
+        return round(_clamp01(probability), 6), "runtime"
     except Exception:
         return 0.5, "runtime_error"
 
@@ -188,7 +94,10 @@ def get_chunk_scorer_startup_check(scorer: str) -> Dict[str, object]:
     info["details"] = {
         "artifact_path": str(RUNTIME_MODEL_PATH),
         "artifact_exists": RUNTIME_MODEL_PATH.exists(),
-        "shape": _runtime_shape(),
+        "scorer_path": str(RUNTIME_SCORER_PATH),
+        "scorer_exists": RUNTIME_SCORER_PATH.exists(),
+        "feature_extractor_path": str(RUNTIME_FEATURE_EXTRACTOR_PATH),
+        "feature_extractor_exists": RUNTIME_FEATURE_EXTRACTOR_PATH.exists(),
     }
 
     ok = _load_runtime_model()

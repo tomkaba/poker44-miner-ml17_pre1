@@ -1,0 +1,90 @@
+{
+  "dataset": "/home/tk/training_gen17/artifacts/phase1_full/chunk_rows.jsonl",
+  "train_rows": 3310,
+  "val_rows": 850,
+  "feature_count": 28,
+  "train_metrics": {
+    "accuracy": 1.0,
+    "balanced_accuracy": 1.0,
+    "bot_recall": 1.0,
+    "human_recall": 1.0,
+    "bot_precision": 1.0,
+    "tp": 1652,
+    "tn": 1658,
+    "fp": 0,
+    "fn": 0
+  },
+  "val_metrics": {
+    "accuracy": 0.9988235294117647,
+    "balanced_accuracy": 0.9988151658767772,
+    "bot_recall": 1.0,
+    "human_recall": 0.9976303317535545,
+    "bot_precision": 0.9976689976689976,
+    "tp": 428,
+    "tn": 421,
+    "fp": 1,
+    "fn": 0
+  },
+  "top_features": [
+    {
+      "feature": "check_rate",
+      "weight": 1.0009280188975138,
+      "abs_weight": 1.0009280188975138
+    },
+    {
+      "feature": "fold_small_price_rate",
+      "weight": 0.8788283536459572,
+      "abs_weight": 0.8788283536459572
+    },
+    {
+      "feature": "mean_cheap_fold_count_per_hand",
+      "weight": 0.8697770926377991,
+      "abs_weight": 0.8697770926377991
+    },
+    {
+      "feature": "call_rate",
+      "weight": 0.8348402988099972,
+      "abs_weight": 0.8348402988099972
+    },
+    {
+      "feature": "bet_rate",
+      "weight": 0.7998931515238814,
+      "abs_weight": 0.7998931515238814
+    },
+    {
+      "feature": "rare_size_rate",
+      "weight": 0.7629382142095458,
+      "abs_weight": 0.7629382142095458
+    },
+    {
+      "feature": "facing_aggression_rate",
+      "weight": 0.7609291321276332,
+      "abs_weight": 0.7609291321276332
+    },
+    {
+      "feature": "raise_rate",
+      "weight": 0.5618314191757353,
+      "abs_weight": 0.5618314191757353
+    },
+    {
+      "feature": "overbet_rate",
+      "weight": 0.45684879686555613,
+      "abs_weight": 0.45684879686555613
+    },
+    {
+      "feature": "bucket_consistency_mean",
+      "weight": -0.4511652998309434,
+      "abs_weight": 0.4511652998309434
+    },
+    {
+      "feature": "bucket_entropy_mean",
+      "weight": 0.41183654332280795,
+      "abs_weight": 0.41183654332280795
+    },
+    {
+      "feature": "action_entropy",
+      "weight": 0.39100282954984283,
+      "abs_weight": 0.39100282954984283
+    }
+  ]
+}

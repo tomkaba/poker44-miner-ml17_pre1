@@ -1,18 +1,20 @@
 {
     "schema_version": "1",
     "open_source": true,
-    "model_name": "poker44_ml16_3",
-    "model_version": "16.3",
-    "framework": "pytorch-torchscript",
+    "model_name": "poker44_ml17_pre1",
+    "model_version": "17.pre1",
+    "framework": "python-numpy-logistic",
     "license": "MIT",
-    "repo_url": "https://github.com/tomkaba/poker44-miner-ml16_3",
-    "repo_commit": "ae617d04d21c1c9c61804087564891f007512d52",
+    "repo_url": "https://github.com/tomkaba/poker44-miner-ml17_pre1",
+    "repo_commit": "42af6328fb301e43e6fbe91efa7e417534817546",
     "inference_mode": "local",
-    "training_data_statement": "Trained with benchmark groundtruth",
-    "data_attestation": "This miner does not train on validator-private human data.",
-    "private_data_attestation": "This miner does not train on validator-private human data.",
+    "training_data_statement": "Trained with benchmark groundtruth from miner_logs.db chunk_truth joined to chunk_dedup.",
+    "data_attestation": "This stage uses benchmark groundtruth only and does not use validator-private human data.",
+    "private_data_attestation": "This stage does not use validator-private human data.",
     "implementation_files": [
-        "weights/gen16_synth3_ft7_d_hardened.ts",
+        "models/model.npz",
+        "models/score_chunk.py",
+        "models/feature_extractor_frozen.py",
         "neurons/miner.py",
         "poker44/__init__.py",
         "poker44/base/miner.py",
@@ -23,6 +25,6 @@
         "poker44/utils/model_manifest.py",
         "poker44/validator/synapse.py"
     ],
-    "implementation_sha256": "4a26e39806ee105f57507583a03227928f16b23d4efc47466b55898a21b7cc8b",
-    "notes": "Gen16-3 neural network scorer (artifact gen16_synth3_ft7_d_hardened)."
+    "implementation_sha256": "b014c4c501c843c77f5753b3b15f69a36e3c5afe97b315f7111576396fee8717",
+    "notes": "Gen17 pre-1 stage1 hero-centric chunk classifier for preprod miner evaluation."
 }

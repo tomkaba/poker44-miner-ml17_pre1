@@ -1,0 +1,9 @@
+{
+  "db_path": "/home/tk/training_gen15/log_management/miner_logs.db",
+  "output_dir": "/home/tk/training_gen17/artifacts/phase1_full",
+  "limit": null,
+  "chunk_rows": 4160,
+  "hand_rows": 250336,
+  "decision_rows": 741384,
+  "skipped_chunks": 0
+}

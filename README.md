@@ -1,14 +1,14 @@
-# Poker44-ml16_3
+# Poker44-ml17_pre1
 
 Minimal release repository for Poker44 miner runtime scoring.
 
-This repository is a standalone miner variant prepared for production rollout.
+This repository is a standalone miner variant prepared for gen17 preprod rollout.
 
 ## Quick start
 
 ```bash
-git clone https://github.com/tomkaba/poker44-miner-ml16_3.git
-cd poker44-miner-ml16_3
+git clone https://github.com/tomkaba/poker44-miner-ml17_pre1.git
+cd poker44-miner-ml17_pre1
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -30,11 +30,16 @@ or legacy wrapper:
 ## Implementation
 
 - Scorer entrypoint: poker44/miner_heuristics.py
+- Frozen artifact scorer: models/score_chunk.py
 - Entry point: neurons/miner.py
-- Runtime model: weights/gen16_synth3_ft7_d_hardened.ts
+- Runtime model: models/model.npz
+- Frozen feature extractor: models/feature_extractor_frozen.py
 
 Manifest implementation SHA256 is computed from:
 
+- models/model.npz
+- models/score_chunk.py
+- models/feature_extractor_frozen.py
 - neurons/miner.py
 - poker44/miner_heuristics.py
 - runtime files tracked in repository
